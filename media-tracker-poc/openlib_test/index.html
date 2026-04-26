@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Tracker — Open Library Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #45a049; }
+
+        .loading {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+        }
+
+        .results {
+            display: grid;
+            gap: 16px;
+        }
+
+        .book-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            transition: transform 0.2s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .book-cover {
+            width: 100px;
+            height: 150px;
+            border-radius: 8px;
+            background: #333;
+            object-fit: cover;
+        }
+
+        .book-cover.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 40px;
+        }
+
+        .book-info {
+            flex: 1;
+        }
+
+        .book-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .book-author {
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .book-year {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .book-subjects {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .subject {
+            background: #333;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .book-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-btn {
+            background: #2196F3;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .stats {
+            margin-top: 40px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 12px;
+        }
+
+        .stats h3 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Media Tracker</h1>
+        <p class="subtitle">Open Library API Demo — поиск книг в реальном времени</p>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Поиск книги..." onkeypress="handleKeyPress(event)">
+            <button onclick="searchBooks()">🔍 Найти</button>
+        </div>
+
+        <div id="results" class="results">
+            <div class="book-card">
+                <img class="book-cover placeholder" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E" alt="placeholder">
+                <div class="book-info">
+                    <div class="book-title">Пример книги</div>
+                    <div class="book-author">Автор</div>
+                    <div class="book-year">2024</div>
+                    <div class="book-subjects">
+                        <span class="subject">Жанр 1</span>
+                        <span class="subject">Жанр 2</span>
+                    </div>
+                    <div class="book-actions">
+                        <button class="add-btn">✓ Добавить в список</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <h3>📊 Статистика пользователя</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Книг прочитано</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">В планах</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">42</div>
+                    <div class="stat-label">Дней читает</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://openlibrary.org/search.json';
+
+        async function searchBooks() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Загрузка...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}?q=${encodeURIComponent(query)}&limit=10&fields=key,title,author_name,first_publish_year,cover_i,subject`);
+                const data = await response.json();
+
+                if (!data.docs || data.docs.length === 0) {
+                    resultsDiv.innerHTML = '<div class="loading">Ничего не найдено</div>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = data.docs.map(book => {
+                    const coverUrl = book.cover_i
+                        ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
+                        : null;
+                    const authors = book.author_name ? book.author_name.join(', ') : 'Неизвестен';
+                    const subjects = book.subject ? book.subject.slice(0, 3).join('</span><span class="subject">') : '';
+
+                    return `
+                        <div class="book-card">
+                            ${coverUrl
+                                ? `<img class="book-cover" src="${coverUrl}" alt="${book.title}">`
+                                : `<img class="book-cover placeholder" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/%3E%3C/svg%3E" alt="placeholder">`
+                            }
+                            <div class="book-info">
+                                <div class="book-title">${book.title}</div>
+                                <div class="book-author">${authors}</div>
+                                <div class="book-year">${book.first_publish_year || 'Год неизвестен'}</div>
+                                ${subjects ? `<div class="book-subjects"><span class="subject">${subjects}</span></div>` : ''}
+                                <div class="book-actions">
+                                    <button class="add-btn" onclick="addBook('${book.key}', '${book.title.replace(/'/g, "\\'")}')">✓ Добавить в список</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="loading">Ошибка: ${error.message}</div>`;
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') searchBooks();
+        }
+
+        function addBook(key, title) {
+            alert(`Книга "${title}" добавлена!\n(Это demo — в MVP будет сохранение в базу)`);
+        }
+
+        // Initial demo search
+        document.getElementById('searchInput').value = '1984';
+        searchBooks();
+    </script>
+</body>
+</html>

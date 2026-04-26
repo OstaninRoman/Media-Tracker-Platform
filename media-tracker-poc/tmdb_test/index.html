@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Tracker — TMDB Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #45a049; }
+
+        .loading {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+        }
+
+        .results {
+            display: grid;
+            gap: 16px;
+        }
+
+        .movie-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            transition: transform 0.2s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .movie-poster {
+            width: 100px;
+            height: 150px;
+            border-radius: 8px;
+            background: #333;
+            object-fit: cover;
+        }
+
+        .movie-poster.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 40px;
+        }
+
+        .movie-info {
+            flex: 1;
+        }
+
+        .movie-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .movie-original {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .movie-meta {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .movie-rating {
+            display: inline-block;
+            background: #333;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #4CAF50;
+            margin-bottom: 12px;
+        }
+
+        .movie-overview {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .movie-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .genre {
+            background: #333;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .movie-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-btn {
+            background: #2196F3;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .stats {
+            margin-top: 40px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 12px;
+        }
+
+        .stats h3 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Media Tracker</h1>
+        <p class="subtitle">TMDB API Demo — поиск фильмов в реальном времени</p>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Поиск фильма..." onkeypress="handleKeyPress(event)">
+            <button onclick="searchMovies()">🔍 Найти</button>
+        </div>
+
+        <div id="results" class="results">
+            <div class="movie-card">
+                <img class="movie-poster placeholder" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E" alt="placeholder">
+                <div class="movie-info">
+                    <div class="movie-title">Пример фильма</div>
+                    <div class="movie-original">Original Title</div>
+                    <div class="movie-meta">2024 • 120 мин</div>
+                    <div class="movie-rating">★ 7.5/10</div>
+                    <div class="movie-overview">Краткое описание фильма...</div>
+                    <div class="movie-genres">
+                        <span class="genre">Жанр 1</span>
+                        <span class="genre">Жанр 2</span>
+                    </div>
+                    <div class="movie-actions">
+                        <button class="add-btn">✓ Добавить в список</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <h3>📊 Статистика пользователя</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">42</div>
+                    <div class="stat-label">Фильмов просмотрено</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">В планах</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">128</div>
+                    <div class="stat-label">Дней смотрит</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PROXY_URL = 'http://localhost:8000/proxy/tmdb';
+        const POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w200';
+
+        async function searchMovies() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Загрузка...</div>';
+
+            try {
+                const response = await fetch(`${PROXY_URL}/search/movie?query=${encodeURIComponent(query)}&language=ru-RU`);
+                const data = await response.json();
+
+                if (data.error) {
+                    resultsDiv.innerHTML = `<div class="loading">Ошибка API: ${data.status_message}</div>`;
+                    return;
+                }
+
+                if (!data.results || data.results.length === 0) {
+                    resultsDiv.innerHTML = '<div class="loading">Ничего не найдено</div>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = data.results.map(movie => {
+                    const posterUrl = movie.poster_path
+                        ? `${POSTER_BASE_URL}${movie.poster_path}`
+                        : null;
+                    const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'Год неизвестен';
+                    const overview = movie.overview
+                        ? (movie.overview.length > 150 ? movie.overview.slice(0, 150) + '...' : movie.overview)
+                        : 'Описание отсутствует';
+
+                    return `
+                        <div class="movie-card">
+                            ${posterUrl
+                                ? `<img class="movie-poster" src="${posterUrl}" alt="${movie.title}">`
+                                : `<img class="movie-poster placeholder" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/%3E%3C/svg%3E" alt="placeholder">`
+                            }
+                            <div class="movie-info">
+                                <div class="movie-title">${movie.title}</div>
+                                ${movie.original_title !== movie.title ? `<div class="movie-original">${movie.original_title}</div>` : ''}
+                                <div class="movie-meta">${releaseYear}</div>
+                                ${movie.vote_average ? `<div class="movie-rating">★ ${movie.vote_average.toFixed(1)}/10</div>` : ''}
+                                <div class="movie-overview">${overview}</div>
+                                <div class="movie-actions">
+                                    <button class="add-btn" onclick="addMovie('${movie.id}', '${movie.title.replace(/'/g, "\\'")}')">✓ Добавить в список</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="loading">Ошибка: ${error.message}</div>`;
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') searchMovies();
+        }
+
+        function addMovie(id, title) {
+            alert(`Фильм "${title}" добавлен!\n(Это demo — в MVP будет сохранение в базу)`);
+        }
+
+        // Initial demo search
+        document.getElementById('searchInput').value = 'Интерстеллар';
+        searchMovies();
+    </script>
+</body>
+</html>
